@@ -29,7 +29,10 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         
         # Security headers to ensure HTTPS and prevent mixed content
-        self.send_header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+        # Only send HSTS if we detect HTTPS (Replit handles SSL termination)
+        if self.headers.get('X-Forwarded-Proto') == 'https' or self.headers.get('X-Forwarded-SSL') == 'on':
+            self.send_header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+        
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('X-Frame-Options', 'DENY')
         self.send_header('X-XSS-Protection', '1; mode=block')
@@ -77,7 +80,8 @@ def start_server():
         
         print(f"Matrix Visualization Server starting...")
         print(f"Serving directory: {DIRECTORY}")
-        print(f"Server running at http://0.0.0.0:{PORT}/")
+        print(f"Server running on port {PORT}")
+        print(f"Server configured for HTTPS deployment")
         print(f"Access your application at the provided URL")
         print("Press Ctrl+C to stop the server")
         
